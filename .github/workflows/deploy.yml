@@ -9,138 +9,129 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set-version.outputs.version }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           ref: 'development'
-          fetch-depth: 0 # Fetch all history and tags
+          fetch-depth: 0
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: release-candidate
+
       - name: Ensure Gradle wrapper is executable
-        run: |
-          if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
-      - name: Package with Gradle
-        run: |
-          ./gradlew clean tag shadowJar -Prelease
-      - name: Set version
+        run: chmod +x ./gradlew
+
+      - name: Build plugin
+        run: ./gradlew clean shadowJar -Prelease
+
+      - name: Generate version
         id: set-version
         run: |
           VERSION=$(./gradlew printTag | awk '/Generated Tag:/ {print $3}')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-      - name: Publish Artifact
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: bedwars-plugin
-          path: bedwars-plugin/build/libs/**.jar
+          path: bedwars-plugin/build/libs/*.jar
           if-no-files-found: error
+
+
   release:
     runs-on: ubuntu-latest
-    needs: [ create-jar ]
+    needs: [create-jar]
     permissions:
       contents: write
+
     steps:
-      - name: Download the artifact
+      - name: Download artifact
         uses: actions/download-artifact@v5
         with:
           name: bedwars-plugin
           path: target
-      - name: Print generated tags
-        run: |
-          echo "Generated Tag: ${{ needs.create-jar.outputs.version }}"
-      - name: Create release
-        id: release
+
+      - name: Show version
+        run: echo "Generated Tag: ${{ needs.create-jar.outputs.version }}"
+
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           target_commitish: development
           tag_name: ${{ needs.create-jar.outputs.version }}
           generate_release_notes: true
-          files: "target/BedWars-*"
+          files: "target/*.jar"
+
+
   deploy-package:
-    timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [ release ]
-    permissions:
-      contents: read
+    needs: [release]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           ref: 'development'
-          fetch-depth: 0 # Fetch all history and tags
+          fetch-depth: 0
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: release-candidate
+
       - name: Ensure Gradle wrapper is executable
-        run: |
-          if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
+        run: chmod +x ./gradlew
+
       - name: Deploy Package
         env:
           REPO_USER: ${{ secrets.REPO_USER }}
           REPO_PASS: ${{ secrets.REPO_PASS }}
-        run: ./gradlew clean publish --stacktrace -PdeployUsername="${REPO_USER}" -PdeployPassword="${REPO_PASS}"
+        run: |
+          ./gradlew clean publish \
+            --stacktrace \
+            -PdeployUsername="${REPO_USER}" \
+            -PdeployPassword="${REPO_PASS}"
+
+
   javadoc:
     name: Publish JavaDoc
     runs-on: ubuntu-latest
     needs: deploy-package
-    permissions:
-      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           ref: 'development'
-          fetch-depth: 0 # Fetch all history and tags
+          fetch-depth: 0
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: release-candidate
-      - name: Ensure Gradle wrapper is executable
-        run: |
-          if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
-      - name: Install Packages
-        run: ./gradlew clean publishToMavenLocal --no-daemon --stacktrace
+
       - name: Build JavaDoc
         run: ./gradlew javadoc --no-daemon --stacktrace
-      - name: Create key for Deploy
-        run: |
-          echo "${{ secrets.JDC_PRIVATE_KEY }}" > ./id_rsa
+
+      - name: Create SSH key
+        run: echo "${{ secrets.JDC_PRIVATE_KEY }}" > id_rsa
+
       - name: Deploy JavaDoc 🚀
         uses: wangyucode/sftp-upload-action@v2.0.4
         with:
