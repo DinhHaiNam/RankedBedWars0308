@@ -67,6 +67,41 @@ import static com.tomkeuper.bedwars.api.language.Language.getMsg;
 
 @SuppressWarnings("WeakerAccess")
 public class BedWarsTeam implements ITeam {
+    private List<Location> shops = new ArrayList<>();
+    private List<Location> upgrades = new ArrayList<>();
+
+    @Override
+    public List<Location> getShops() {
+        return shops;
+    }
+
+    @Override
+    public List<Location> getUpgrades() {
+        return upgrades;
+    }
+
+    private List<Location> loadNpcLocations(String path) {
+
+        List<Location> locations = new ArrayList<>();
+
+        for (String s : arena.getConfig().getYml().getStringList(path)) {
+
+            String[] split = s.split(",");
+
+            if (split.length < 5) continue;
+
+            locations.add(new Location(
+                    arena.getWorld(),
+                    Double.parseDouble(split[0]),
+                    Double.parseDouble(split[1]),
+                    Double.parseDouble(split[2]),
+                    Float.parseFloat(split[3]),
+                    Float.parseFloat(split[4])
+            ));
+        }
+
+        return locations;
+    }
 
     @Getter
     private List<Player> members = new ArrayList<>();
@@ -198,25 +233,92 @@ public class BedWarsTeam implements ITeam {
      * Spawn shopkeepers for target team (if enabled).
      */
     public void spawnNPCs() {
-        if (getMembers().isEmpty() && getArena().getConfig().getBoolean(ConfigPath.ARENA_DISABLE_NPCS_FOR_EMPTY_TEAMS)) return;
+
+        if (getMembers().isEmpty()
+                && getArena().getConfig().getBoolean(ConfigPath.ARENA_DISABLE_NPCS_FOR_EMPTY_TEAMS)) {
+            return;
+        }
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
+
             nms.colorBed(this);
-            nms.spawnShop(arena.getConfig().getArenaLoc("Team." + getName() + ".Upgrade"), (arena.getMaxInTeam() > 1 ? Messages.NPC_NAME_TEAM_UPGRADES.replace("%group%", arena.getGroup()) : Messages.NPC_NAME_SOLO_UPGRADES.replace("%group%", arena.getGroup())), arena.getPlayers(), arena);
-            nms.spawnShop(arena.getConfig().getArenaLoc("Team." + getName() + ".Shop"), (arena.getMaxInTeam() > 1 ? Messages.NPC_NAME_TEAM_SHOP.replace("%group%", arena.getGroup()) : Messages.NPC_NAME_SOLO_SHOP.replace("%group%", arena.getGroup())), arena.getPlayers(), arena);
-            nms.spawnShopHologram(arena.getConfig().getArenaLoc("Team." + getName() + ".Upgrade"), (arena.getMaxInTeam() > 1 ? Messages.NPC_NAME_TEAM_UPGRADES.replace("%group%", arena.getGroup()) : Messages.NPC_NAME_SOLO_UPGRADES.replace("%group%", arena.getGroup())), arena.getPlayers(), this);
-            nms.spawnShopHologram(arena.getConfig().getArenaLoc("Team." + getName() + ".Shop"), (arena.getMaxInTeam() > 1 ? Messages.NPC_NAME_TEAM_SHOP.replace("%group%", arena.getGroup()) : Messages.NPC_NAME_SOLO_SHOP).replace("%group%", arena.getGroup()), arena.getPlayers(), this);
+
+            String upgradeName =
+                    (arena.getMaxInTeam() > 1
+                            ? Messages.NPC_NAME_TEAM_UPGRADES
+                            : Messages.NPC_NAME_SOLO_UPGRADES)
+                            .replace("%group%", arena.getGroup());
+
+            String shopName =
+                    (arena.getMaxInTeam() > 1
+                            ? Messages.NPC_NAME_TEAM_SHOP
+                            : Messages.NPC_NAME_SOLO_SHOP)
+                            .replace("%group%", arena.getGroup());
+
+            for (Location loc : upgrades) {
+
+                nms.spawnShop(
+                        loc,
+                        upgradeName,
+                        arena.getPlayers(),
+                        arena
+                );
+
+                nms.spawnShopHologram(
+                        loc,
+                        upgradeName,
+                        arena.getPlayers(),
+                        this
+                );
+            }
+
+            for (Location loc : shops) {
+
+                nms.spawnShop(
+                        loc,
+                        shopName,
+                        arena.getPlayers(),
+                        arena
+                );
+
+                nms.spawnShopHologram(
+                        loc,
+                        shopName,
+                        arena.getPlayers(),
+                        this
+                );
+            }
+
         }, 20L);
 
-        Cuboid c1 = new Cuboid(arena.getConfig().getArenaLoc("Team." + getName() + ".Upgrade"), arena.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION), true);
-        c1.setMinY(c1.getMinY() - 1);
-        c1.setMaxY(c1.getMaxY() + 4);
-        arena.getRegionsList().add(c1);
+        for (Location loc : upgrades) {
 
-        Cuboid c2 = new Cuboid(arena.getConfig().getArenaLoc("Team." + getName() + ".Shop"), arena.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION), true);
-        c2.setMinY(c2.getMinY() - 1);
-        c2.setMaxY(c2.getMaxY() + 4);
-        arena.getRegionsList().add(c2);
+            Cuboid c1 = new Cuboid(
+                    loc,
+                    arena.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION),
+                    true
+            );
+
+            c1.setMinY(c1.getMinY() - 1);
+            c1.setMaxY(c1.getMaxY() + 4);
+
+            arena.getRegionsList().add(c1);
+        }
+
+        for (Location loc : shops) {
+
+            Cuboid c2 = new Cuboid(
+                    loc,
+                    arena.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION),
+                    true
+            );
+
+            c2.setMinY(c2.getMinY() - 1);
+            c2.setMaxY(c2.getMaxY() + 4);
+
+            arena.getRegionsList().add(c2);
+        }
+
         shopSpawned = true;
     }
 

@@ -39,6 +39,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public interface ITeam {
+    List<Location> getShops();
+    List<Location> getUpgrades();
 
     /**
      * Get team color.
