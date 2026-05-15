@@ -67,8 +67,8 @@ import static com.tomkeuper.bedwars.api.language.Language.getMsg;
 
 @SuppressWarnings("WeakerAccess")
 public class BedWarsTeam implements ITeam {
-    private List<Location> shops = new ArrayList<>();
-    private List<Location> upgrades = new ArrayList<>();
+    //private List<Location> shops = new ArrayList<>();
+    //private List<Location> upgrades = new ArrayList<>();
 
     @Override
     public List<Location> getShops() {
@@ -78,29 +78,6 @@ public class BedWarsTeam implements ITeam {
     @Override
     public List<Location> getUpgrades() {
         return upgrades;
-    }
-
-    private List<Location> loadNpcLocations(String path) {
-
-        List<Location> locations = new ArrayList<>();
-
-        for (String s : arena.getConfig().getYml().getStringList(path)) {
-
-            String[] split = s.split(",");
-
-            if (split.length < 5) continue;
-
-            locations.add(new Location(
-                    arena.getWorld(),
-                    Double.parseDouble(split[0]),
-                    Double.parseDouble(split[1]),
-                    Double.parseDouble(split[2]),
-                    Float.parseFloat(split[3]),
-                    Float.parseFloat(split[4])
-            ));
-        }
-
-        return locations;
     }
 
     @Getter
