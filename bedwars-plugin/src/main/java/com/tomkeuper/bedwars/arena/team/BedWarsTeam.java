@@ -67,8 +67,8 @@ import static com.tomkeuper.bedwars.api.language.Language.getMsg;
 
 @SuppressWarnings("WeakerAccess")
 public class BedWarsTeam implements ITeam {
-    //private List<Location> shops = new ArrayList<>();
-    //private List<Location> upgrades = new ArrayList<>();
+    private List<Location> shops = new ArrayList<>();
+    private List<Location> upgrades = new ArrayList<>();
 
     @Override
     public List<Location> getShops() {
