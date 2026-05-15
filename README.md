@@ -2,7 +2,7 @@
 
 [![Discord](https://discordapp.com/api/guilds/760851292826107926/widget.png?style=shield)](https://discord.gg/kPaBGwhmjf) [![bStats](https://img.shields.io/bstats/servers/18317)](#)
 
-As of March 2023 development has started on RankedBedWars0308 a fork of [BedWars2023](https://github.com/tomkeuper/BedWars2023) which is a fork of the [BedWars1058](https://www.spigotmc.org/resources/bedwars1058-opensource.97320/) plugin. The goal of this fork is adding some features for ranked bedwars arenas.
+As of May 2026 development has started on RankedBedWars0308 a fork of [BedWars2023](https://github.com/tomkeuper/BedWars2023) which is a fork of the [BedWars1058](https://www.spigotmc.org/resources/bedwars1058-opensource.97320/) plugin. The goal of this fork is adding some features for ranked bedwars arenas.
 
 The plugin is published under the open-source GNU GPL 3.0 license. You can read the full license [here](https://www.gnu.org/licenses/gpl-3.0.html).
 
