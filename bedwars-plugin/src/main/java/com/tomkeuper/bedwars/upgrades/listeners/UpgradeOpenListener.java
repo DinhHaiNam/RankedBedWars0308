@@ -34,17 +34,35 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 public class UpgradeOpenListener implements Listener {
 
     @EventHandler
-    public void onUpgradesOpen(PlayerInteractEntityEvent e){
+    public void onUpgradesOpen(PlayerInteractEntityEvent e) {
+
         IArena a = Arena.getArenaByPlayer(e.getPlayer());
+
         if (a == null) return;
-        if(!a.getStatus().equals(GameState.playing)) return;
+        if (!a.getStatus().equals(GameState.playing)) return;
+
         Location l = e.getRightClicked().getLocation();
+
         for (ITeam t : a.getTeams()) {
-            Location l2 = t.getTeamUpgrades();
-            if (l.getBlockX() == l2.getBlockX() && l.getBlockY() == l2.getBlockY() && l.getBlockZ() == l2.getBlockZ()) {
-                e.setCancelled(true);
-                if (a.isPlayer(e.getPlayer())) {
-                    BedWars.getUpgradeManager().getMenuForArena(a).open(e.getPlayer());
+
+            for (Location l2 : t.getUpgrades()) {
+
+                if (l2 == null || l2.getWorld() == null) continue;
+
+                if (l.getBlockX() == l2.getBlockX()
+                        && l.getBlockY() == l2.getBlockY()
+                        && l.getBlockZ() == l2.getBlockZ()) {
+
+                    e.setCancelled(true);
+
+                    if (a.isPlayer(e.getPlayer())) {
+
+                        BedWars.getUpgradeManager()
+                                .getMenuForArena(a)
+                                .open(e.getPlayer());
+                    }
+
+                    return;
                 }
             }
         }
