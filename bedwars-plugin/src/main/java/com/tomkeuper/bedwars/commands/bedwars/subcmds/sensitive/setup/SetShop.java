@@ -52,47 +52,130 @@ public class SetShop extends SubCommand {
     @Override
     public boolean execute(String[] args, CommandSender s) {
         if (s instanceof ConsoleCommandSender) return false;
+
         Player p = (Player) s;
         SetupSession ss = SetupSession.getSession(p.getUniqueId());
+
         if (ss == null) {
-            //s.sendMessage("§c ▪ §7You're not in a setup session!");
             return false;
         }
+
         if (args.length == 0) {
             String foundTeam = ss.getNearestTeam();
+
             if (foundTeam.isEmpty()) {
                 p.sendMessage("");
                 p.sendMessage(ss.getPrefix() + ChatColor.RED + "Could not find any nearby team.");
-                p.spigot().sendMessage(Misc.msgHoverClick(ss.getPrefix() + "Make sure you set the team's spawn first!", ChatColor.WHITE + "Set a team spawn.", "/" + getParent().getName() + " " + getSubCommandName() + " ", ClickEvent.Action.SUGGEST_COMMAND));
-                p.spigot().sendMessage(Misc.msgHoverClick(ss.getPrefix() + "Or if you set the spawn and it wasn't found automatically try using: /bw " + getSubCommandName() + " <team>", "Set a team shop.", "/" + getParent().getName() + " " + getSubCommandName() + " ", ClickEvent.Action.SUGGEST_COMMAND));
-                p.spigot().sendMessage(Misc.msgHoverClick(ss.getPrefix() + "Other use: /bw setShop <teamName>", "Set a team shop.", "/" + getParent().getName() + " " + getSubCommandName() + " ", ClickEvent.Action.SUGGEST_COMMAND));
-                com.tomkeuper.bedwars.BedWars.nms.sendTitle(p, " ", ChatColor.RED + "Could not find any nearby team.", 0, 60, 10);
+
+                p.spigot().sendMessage(
+                        Misc.msgHoverClick(
+                                ss.getPrefix() + "Make sure you set the team's spawn first!",
+                                ChatColor.WHITE + "Set a team spawn.",
+                                "/" + getParent().getName() + " " + getSubCommandName() + " ",
+                                ClickEvent.Action.SUGGEST_COMMAND
+                        )
+                );
+
+                com.tomkeuper.bedwars.BedWars.nms.sendTitle(
+                        p,
+                        " ",
+                        ChatColor.RED + "Could not find any nearby team.",
+                        0,
+                        60,
+                        10
+                );
+
                 Sounds.playSound(ConfigPath.SOUNDS_INSUFF_MONEY, p);
+
             } else {
-                Bukkit.dispatchCommand(s, getParent().getName() + " " + getSubCommandName() + " " + foundTeam);
+                Bukkit.dispatchCommand(
+                        s,
+                        getParent().getName() + " " + getSubCommandName() + " " + foundTeam
+                );
             }
+
         } else {
+
             if (ss.getConfig().getYml().get("Team." + args[0]) == null) {
+
                 p.sendMessage(ss.getPrefix() + ChatColor.RED + "This team doesn't exist!");
+
                 if (ss.getConfig().getYml().get("Team") != null) {
+
                     p.sendMessage(ss.getPrefix() + "Available teams: ");
-                    for (String team : Objects.requireNonNull(ss.getConfig().getYml().getConfigurationSection("Team")).getKeys(false)) {
-                        p.spigot().sendMessage(Misc.msgHoverClick(ChatColor.GOLD + " " + '▪' + " " + ss.getTeamColor(team) + team + ChatColor.GRAY + " (click to set)", ChatColor.GRAY + "Set shop for " + TeamColor.getChatColor(Objects.requireNonNull(ss.getConfig().getYml().getString("Team." + team + ".Color"))) + team, "/" + com.tomkeuper.bedwars.BedWars.mainCmd + " setShop " + team, ClickEvent.Action.RUN_COMMAND));
+
+                    for (String team : Objects.requireNonNull(
+                            ss.getConfig().getYml().getConfigurationSection("Team")
+                    ).getKeys(false)) {
+
+                        p.spigot().sendMessage(
+                                Misc.msgHoverClick(
+                                        ChatColor.GOLD + " " + '▪' + " "
+                                                + ss.getTeamColor(team)
+                                                + team
+                                                + ChatColor.GRAY
+                                                + " (click to set)",
+
+                                        ChatColor.GRAY + "Set shop for "
+                                                + TeamColor.getChatColor(
+                                                Objects.requireNonNull(
+                                                        ss.getConfig().getYml().getString(
+                                                                "Team." + team + ".Color"
+                                                        )
+                                                )
+                                        ) + team,
+
+                                        "/" + com.tomkeuper.bedwars.BedWars.mainCmd
+                                                + " setShop " + team,
+
+                                        ClickEvent.Action.RUN_COMMAND
+                                )
+                        );
                     }
                 }
+
             } else {
+
                 String team = ss.getTeamColor(args[0]) + args[0];
+
+                Location loc = p.getLocation();
+
+                // remove old hologram if needed
                 if (ss.getConfig().getYml().get("Team." + args[0] + ".Shop") != null) {
                     ss.removeShopHologram(team);
                 }
-                ss.createShopHologram(p, p.getLocation(), team);
-                ss.getConfig().saveArenaLoc("Team." + args[0] + ".Shop", p.getLocation());
-                p.sendMessage(ss.getPrefix() + "Shop set for: " + team);
+
+                // create hologram
+                ss.createShopHologram(p, loc, team);
+
+                String path = "Team." + args[0] + ".Shop";
+
+                // existing locations
+                List<String> shops = ss.getConfig().getYml().getStringList(path);
+
+                // x,y,z,yaw,pitch
+                String serialized =
+                        loc.getX() + "," +
+                        loc.getY() + "," +
+                        loc.getZ() + "," +
+                        loc.getYaw() + "," +
+                        loc.getPitch();
+
+                // add new shop
+                shops.add(serialized);
+
+                // save
+                ss.getConfig().getYml().set(path, shops);
+                ss.getConfig().save();
+
+                p.sendMessage(ss.getPrefix() + "Shop added for: " + team);
+
                 if (ss.getSetupType() == SetupType.ASSISTED) {
                     Bukkit.dispatchCommand(p, getParent().getName());
                 }
             }
         }
+
         return true;
     }
 
