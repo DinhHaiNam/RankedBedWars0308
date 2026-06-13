@@ -119,13 +119,30 @@ public class Arena implements IArena {
     private IShopIndex linkedShop;
     private UpgradesIndex linkedUpgrades;
 
+    // --- STATIC MAP TRACKERS AND UTILITIES FOR OTHER CLASSES ---
     private static final HashMap<String, IArena> arenaByName = new HashMap<>();
     private static final HashMap<Player, IArena> arenaByPlayer = new HashMap<>();
     private static final HashMap<String, IArena> arenaByIdentifier = new HashMap<>();
     private static final LinkedList<IArena> arenas = new LinkedList<>();
+    private static final LinkedList<IArena> enableQueue = new LinkedList<>();
+    
     private static int gamesBeforeRestart = config.getInt(ConfigPath.GENERAL_CONFIGURATION_BUNGEE_OPTION_GAMES_BEFORE_RESTART);
     public static HashMap<UUID, Integer> afkCheck = new HashMap<>();
     public static HashMap<UUID, Integer> magicMilk = new HashMap<>();
+
+    public static List<IArena> getArenas() { return arenas; }
+    public static IArena getArenaByPlayer(Player p) { return arenaByPlayer.get(p); }
+    public static void setArenaByPlayer(Player p, IArena a) { if (a == null) arenaByPlayer.remove(p); else arenaByPlayer.put(p, a); }
+    public static IArena getArenaByName(String name) { return arenaByName.get(name); }
+    public static IArena getArenaByIdentifier(String id) { return arenaByIdentifier.get(id); }
+    public static List<IArena> getEnableQueue() { return enableQueue; }
+    public static void addToEnableQueue(IArena a) { enableQueue.add(a); }
+    public static void removeFromEnableQueue(IArena a) { enableQueue.remove(a); }
+    public static boolean isInArena(Player p) { return arenaByPlayer.containsKey(p); }
+    public static boolean joinRandomArena(Player p) { return false; }
+    public static boolean joinRandomFromGroup(Player p, String g) { return false; }
+    public static void sendLobbyCommandItems(Player p) {}
+    public static boolean isVip(Player p) { return p.hasPermission("bedwars.vip"); }
 
     private List<Player> players = new ArrayList<>();
     private List<Player> spectators = new ArrayList<>();
@@ -172,8 +189,6 @@ public class Arena implements IArena {
     private HashMap<String, List<ShopHolo>> shopHolosIso = new HashMap<>();
     private PerMinuteTask perMinuteTask;
     private MoneyPerMinuteTask moneyperMinuteTask;
-
-    private static final LinkedList<IArena> enableQueue = new LinkedList<>();
 
     private Location respawnLocation, spectatorLocation, waitingLocation;
     private int yKillHeight;
@@ -257,7 +272,6 @@ public class Arena implements IArena {
                 error = true;
             }
             
-            // Validation updated to tolerate string lists or items for new formats
             for (String stuff : Arrays.asList("Color", "Spawn", "Bed", "Shop", "Upgrade")) {
                 if (yml.get("Team." + team + "." + stuff) == null) {
                     if (p != null) p.sendMessage("§c" + stuff + " not set for " + team + " team on: " + name);
@@ -329,7 +343,6 @@ public class Arena implements IArena {
                 continue;
             }
 
-            // Safe Conversion: Pull the first location out of string lists if config used arrays for Shops/Upgrades
             Location spawnLoc = cm.getArenaLoc("Team." + team + ".Spawn");
             Location bedLoc = cm.getArenaLoc("Team." + team + ".Bed");
             
@@ -343,7 +356,6 @@ public class Arena implements IArena {
             teams.add(bwt);
             bwt.spawnGenerators();
 
-            // Custom local base resource nodes defined inside your custom Team blocks (e.g. Iron, Gold, Emerald lists)
             for (String key : Arrays.asList("Iron", "Gold", "Emerald", "Diamond")) {
                 if (yml.get("Team." + team + "." + key) != null) {
                     try {
@@ -360,7 +372,6 @@ public class Arena implements IArena {
             }
         }
 
-        // Global Map Generators processing (Parses the custom key lists under 'generator:')
         if (yml.get("generator") != null && yml.isConfigurationSection("generator")) {
             ConfigurationSection genSection = yml.getConfigurationSection("generator");
             for (String type : genSection.getKeys(false)) {
@@ -398,15 +409,14 @@ public class Arena implements IArena {
             nextEvents.add(ne.toString());
         }
 
-        // --- NEW DYNAMIC HIERARCHY UPGRADE PATHS ---
-        // Dynamically reads group paths using the custom layout inside generators.yml
         String currentGroup = getGroup();
         if (getGeneratorsCfg().getYml().get(currentGroup) == null) {
             currentGroup = "Default";
         }
         
-        upgradeDiamondsCount = getGeneratorsCfg().getInt(currentGroup + ".diamond.tierII.start", 360);
-        upgradeEmeraldsCount = getGeneratorsCfg().getInt(currentGroup + ".emerald.tierII.start", 720);
+        // ConfigManager.getInt requires a single path argument without defaults
+        upgradeDiamondsCount = getGeneratorsCfg().getInt(currentGroup + ".diamond.tierII.start");
+        upgradeEmeraldsCount = getGeneratorsCfg().getInt(currentGroup + ".emerald.tierII.start");
         plugin.getLogger().info("Load done: " + getArenaName());
 
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new File("spigot.yml"));
@@ -618,6 +628,8 @@ public class Arena implements IArena {
         return true;
     }
 
+    @Override public void setTeamAssigner(ITeamAssigner assigner) { this.teamAssigner = assigner; }
+    @Override public ITeamAssigner getTeamAssigner() { return this.teamAssigner; }
     @Override public boolean addSpectator(Player p, boolean playerBefore, Location targetLocation) { return true; }
     @Override public void setAllowEnderDragonDestroy(boolean value) { this.enderDragonDestory = value; }
     @Override public boolean isAllowEnderDragonDestroy() { return enderDragonDestory; }
@@ -631,6 +643,7 @@ public class Arena implements IArena {
     @Override public GameState getStatus() { return status; }
     @Override public void changeStatus(GameState status) { this.status = status; }
     @Override public String getGroup() { return group; }
+    @Override public void setGroup(String group) { this.group = group; }
     @Override public List<Player> getPlayers() { return players; }
     @Override public int getMaxPlayers() { return maxPlayers; }
     @Override public boolean isSpectator(Player p) { return spectators.contains(p); }
