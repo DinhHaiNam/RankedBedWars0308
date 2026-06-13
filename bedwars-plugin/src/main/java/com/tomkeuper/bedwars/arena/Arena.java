@@ -760,6 +760,18 @@ public class Arena implements IArena {
         return enderDragonDestory;
     }
 
+    @Override
+    public ITeam getBedsTeam(Location loc) {
+        for (ITeam team : teams) {
+            if (team.getBed().getBlockX() == loc.getBlockX() &&
+                team.getBed().getBlockY() == loc.getBlockY() &&
+                team.getBed().getBlockZ() == loc.getBlockZ()) {
+                return team;
+            }
+        }
+        return null;
+    }
+
     @Override public int getMagicMilkTime() { return magicMilkTime; }
     @Override public String getArenaName() { return arenaName; }
     @Override public World getWorld() { return world; }
