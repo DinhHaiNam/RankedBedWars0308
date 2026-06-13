@@ -750,6 +750,11 @@ public class Arena implements IArena {
         // Placeholder handling for TAB integrations
     }
 
+    @Override
+    public void setAllowEnderDragonDestroy(boolean value) {
+        this.enderDragonDestory = value;
+    }
+
     @Override public int getMagicMilkTime() { return magicMilkTime; }
     @Override public String getArenaName() { return arenaName; }
     @Override public World getWorld() { return world; }
@@ -766,7 +771,8 @@ public class Arena implements IArena {
     @Override public ITeam getTeam(String name) { return teams.stream().filter(t -> t.getName().equalsIgnoreCase(name)).findFirst().orElse(null); }
     @Override public Location getWaitingLocation() { return waitingLocation; }
     @Override public ArenaConfig getConfig() { return cm; }
-    @Override public void registerSigns() {}
+    
+    public void registerSigns() {}
     @Override public void refreshSigns() {}
     @Override public void registerScoreboards() {}
     @Override public void sendPreGameCommandItems(Player p) {}
