@@ -60,10 +60,7 @@ public class OreGenerator implements IGenerator {
     private int spawnLimit = 0, amount = 1;
     final int speedMultiplier = 4;
     private double delay = 1, lastSpawn;
-    /**
-     * -- GETTER --
-     * Get the arena assigned to this generator.
-     */
+    
     @Getter
     private IArena arena;
     private ItemStack ore;
@@ -81,19 +78,27 @@ public class OreGenerator implements IGenerator {
     private static final ConcurrentLinkedDeque<OreGenerator> rotation = new ConcurrentLinkedDeque<>();
 
     public OreGenerator(Location location, IArena arena, GeneratorType type, ITeam bwt, boolean hologram) {
+        // Correctly offsets coordinates for ALL map-wide shared generators (bwt == null)
         if (bwt == null || type == GeneratorType.EMERALD || type == GeneratorType.DIAMOND) {
             this.location = new Location(location.getWorld(), location.getBlockX() + 0.5, location.getBlockY() + 1.3, location.getBlockZ() + 0.5);
         } else {
-            this.location = location.add(0, 1.3, 0);
+            this.location = location.clone().add(0, 1.3, 0);
         }
         this.arena = arena;
         this.bwt = bwt;
         this.type = type;
         this.hologramEnabled = hologram;
         loadDefaults();
-        BedWars.debug("Initializing new generator at: " + location + " - " + type + " - " + (bwt == null ? "NOTEAM" : bwt.getName()));
+        BedWars.debug("Initializing generator at: " + this.location + " - " + type + " - " + (bwt == null ? "GLOBAL" : bwt.getName()));
 
-        Cuboid c = new Cuboid(location, arena.getConfig().getInt(ConfigPath.ARENA_GENERATOR_PROTECTION), true);
+        // CRITICAL DEV WIKI FIX: Automatically forces custom map-wide Iron/Gold generators into the active Arena loop
+        if (bwt == null && (type == GeneratorType.IRON || type == GeneratorType.GOLD)) {
+            if (arena != null && !arena.getOreGenerators().contains(this)) {
+                arena.getOreGenerators().add(this);
+            }
+        }
+
+        Cuboid c = new Cuboid(this.location, arena.getConfig().getInt(ConfigPath.ARENA_GENERATOR_PROTECTION), true);
         c.setMaxY(c.getMaxY() + 5);
         c.setMinY(c.getMinY() - 2);
         arena.getRegionsList().add(c);
@@ -190,7 +195,7 @@ public class OreGenerator implements IGenerator {
         }
         lastSpawn--;
 
-        if (bwt == null && hologramEnabled) {
+        if (hologramEnabled) {
             int displaySeconds = (int) Math.ceil(lastSpawn / speedMultiplier);
             for (String iso : hologramLanguages.keySet()) {
                 IGenHolo e = hologramLanguages.get(iso);
@@ -279,9 +284,9 @@ public class OreGenerator implements IGenerator {
         }
 
         @Override
-        public void setTierName(String name) { tier.setText(name); }
+        public void setTierName(String name) { if(tier != null) tier.setText(name); }
         @Override
-        public void setTimerName(String name) { timer.setText(name); }
+        public void setTimerName(String name) { if(timer != null) timer.setText(name); }
         @Override
         public String getIso() { return iso; }
         @Override
@@ -329,31 +334,27 @@ public class OreGenerator implements IGenerator {
 
     @Override
     public void disable() {
-        if (bwt == null) {
-            rotation.remove(this);
-            for (IGenHolo holo : hologramLanguages.values()) {
-                holo.destroy();
-            }
-            if (item != null) {
-                item.destroy();
-                item = null;
-            }
-            hologramLanguages.clear();
+        rotation.remove(this);
+        for (IGenHolo holo : hologramLanguages.values()) {
+            holo.destroy();
         }
+        if (item != null) {
+            item.destroy();
+            item = null;
+        }
+        hologramLanguages.clear();
         disabled = true;
     }
 
     @Override
     public void enable() {
-        if (bwt == null) {
-            enableRotation();
-        }
+        enableRotation();
         disabled = false;
     }
 
     @Override
     public void updateHolograms(Player p) {
-        if (!hologramEnabled || bwt != null) return;
+        if (!hologramEnabled) return;
         if (!arena.getWorld().getPlayers().contains(p)) return;
 
         for (Language lang : Language.getLanguages()) {
@@ -368,13 +369,15 @@ public class OreGenerator implements IGenerator {
         }
 
         for (IGenHolo hg : hologramLanguages.values()) {
-            hg.update();
+            hg.update(p);
         }
     }
 
     @Override
     public void enableRotation() {
-        rotation.add(this);
+        if (!rotation.contains(this)) {
+            rotation.add(this);
+        }
         if (hologramEnabled) {
             for (Language lang : Language.getLanguages()) {
                 List<Player> playersToAdd = new ArrayList<>();
@@ -402,9 +405,11 @@ public class OreGenerator implements IGenerator {
             default: visualBlock = Material.EMERALD_BLOCK; break;
         }
 
-        this.item = new GeneratorHolder(location.add(0, 0.35, 0), new ItemStack(visualBlock));
-        this.animations = new ArrayList<>();
-        animations.add(BedWars.nms.createDefaultGeneratorAnimation(item.getArmorStand()));
+        if (this.item == null) {
+            this.item = new GeneratorHolder(location.clone().add(0, 0.35, 0), new ItemStack(visualBlock));
+            this.animations = new ArrayList<>();
+            animations.add(BedWars.nms.createDefaultGeneratorAnimation(item.getArmorStand()));
+        }
     }
 
     @Override
