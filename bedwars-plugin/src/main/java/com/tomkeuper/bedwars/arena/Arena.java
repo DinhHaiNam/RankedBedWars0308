@@ -119,7 +119,7 @@ public class Arena implements IArena {
     private IShopIndex linkedShop;
     private UpgradesIndex linkedUpgrades;
 
-    // --- STATIC MAP TRACKERS AND UTILITIES FOR OTHER CLASSES ---
+    // --- STATIC MAP TRACKERS AND UTILITIES ---
     private static final HashMap<String, IArena> arenaByName = new HashMap<>();
     private static final HashMap<Player, IArena> arenaByPlayer = new HashMap<>();
     private static final HashMap<String, IArena> arenaByIdentifier = new HashMap<>();
@@ -130,12 +130,19 @@ public class Arena implements IArena {
     public static HashMap<UUID, Integer> afkCheck = new HashMap<>();
     public static HashMap<UUID, Integer> magicMilk = new HashMap<>();
 
-    public static List<IArena> getArenas() { return arenas; }
+    // --- REPAIRED UTILITY METHODS AND GETTERS ---
+    public static LinkedList<IArena> getArenas() { return arenas; }
     public static IArena getArenaByPlayer(Player p) { return arenaByPlayer.get(p); }
+    public static HashMap<Player, IArena> getArenaByPlayer() { return arenaByPlayer; }
     public static void setArenaByPlayer(Player p, IArena a) { if (a == null) arenaByPlayer.remove(p); else arenaByPlayer.put(p, a); }
+    public static void removeArenaByPlayer(Player p, IArena a) { arenaByPlayer.remove(p); }
+    
     public static IArena getArenaByName(String name) { return arenaByName.get(name); }
+    public static void setArenaByName(IArena a) { if (a != null) arenaByName.put(a.getArenaName(), a); }
+    public static void removeArenaByName(String name) { arenaByName.remove(name); arenaByIdentifier.remove(name); }
+    
     public static IArena getArenaByIdentifier(String id) { return arenaByIdentifier.get(id); }
-    public static List<IArena> getEnableQueue() { return enableQueue; }
+    public static LinkedList<IArena> getEnableQueue() { return enableQueue; }
     public static void addToEnableQueue(IArena a) { enableQueue.add(a); }
     public static void removeFromEnableQueue(IArena a) { enableQueue.remove(a); }
     public static boolean isInArena(Player p) { return arenaByPlayer.containsKey(p); }
@@ -144,6 +151,27 @@ public class Arena implements IArena {
     public static void sendLobbyCommandItems(Player p) {}
     public static boolean isVip(Player p) { return p.hasPermission("bedwars.vip"); }
 
+    public static int getGamesBeforeRestart() { return gamesBeforeRestart; }
+    public static void setGamesBeforeRestart(int games) { gamesBeforeRestart = games; }
+    public static boolean canAutoScale(String name) { return autoscale; }
+    
+    public static List<IArena> getSorted(List<IArena> unsortedList) {
+        List<IArena> sorted = new ArrayList<>(unsortedList);
+        sorted.sort(Comparator.comparing(IArena::getArenaName, String.CASE_INSENSITIVE_ORDER));
+        return sorted;
+    }
+
+    public static int getPlayers(String groupName) {
+        int count = 0;
+        for (IArena arena : arenas) {
+            if (arena.getGroup().equalsIgnoreCase(groupName)) {
+                count += arena.getPlayers().size();
+            }
+        }
+        return count;
+    }
+
+    // --- INSTANCE VARIABLES ---
     private List<Player> players = new ArrayList<>();
     private List<Player> spectators = new ArrayList<>();
     private List<Block> signs = new ArrayList<>();
@@ -192,7 +220,7 @@ public class Arena implements IArena {
 
     private Location respawnLocation, spectatorLocation, waitingLocation;
     private int yKillHeight;
-    private Instant startTime;
+    private Instant startTime = Instant.now();
     private ITeamAssigner teamAssigner = new TeamAssigner();
     private String mapName;
 
@@ -414,7 +442,6 @@ public class Arena implements IArena {
             currentGroup = "Default";
         }
         
-        // ConfigManager.getInt requires a single path argument without defaults
         upgradeDiamondsCount = getGeneratorsCfg().getInt(currentGroup + ".diamond.tierII.start");
         upgradeEmeraldsCount = getGeneratorsCfg().getInt(currentGroup + ".emerald.tierII.start");
         plugin.getLogger().info("Load done: " + getArenaName());
@@ -628,6 +655,11 @@ public class Arena implements IArena {
         return true;
     }
 
+    // --- LEFTOVER SPECIFIC UNIMPLEMENTED TASKS / COMPILER PLUGS ---
+    public void set1_8BossBarName(ITeam team, EnderDragon dragon) {}
+    public void createTABTeamDragonBossBar(ITeam team, int value) {}
+
+    @Override public Instant getStartTime() { return startTime; }
     @Override public void setTeamAssigner(ITeamAssigner assigner) { this.teamAssigner = assigner; }
     @Override public ITeamAssigner getTeamAssigner() { return this.teamAssigner; }
     @Override public boolean addSpectator(Player p, boolean playerBefore, Location targetLocation) { return true; }
