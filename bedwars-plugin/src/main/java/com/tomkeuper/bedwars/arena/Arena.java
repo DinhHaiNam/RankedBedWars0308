@@ -126,6 +126,57 @@ public class Arena implements IArena {
     public static HashMap<UUID, Integer> afkCheck = new HashMap<>();
     public static HashMap<UUID, Integer> magicMilk = new HashMap<>();
 
+    // --- Static Utility Accessors to resolve Compilation Errors ---
+
+    public static IArena getArenaByName(String name) {
+        return arenaByName.get(name);
+    }
+
+    public static IArena getArenaByPlayer(Player player) {
+        return arenaByPlayer.get(player);
+    }
+
+    public static HashMap<Player, IArena> getArenaByPlayer() {
+        return arenaByPlayer;
+    }
+
+    public static IArena getArenaByIdentifier(String identifier) {
+        return arenaByIdentifier.get(identifier);
+    }
+
+    public static LinkedList<IArena> getArenas() {
+        return arenas;
+    }
+
+    public static boolean isInArena(Player player) {
+        return arenaByPlayer.containsKey(player);
+    }
+
+    public static boolean joinRandomArena(Player player) {
+        for (IArena arena : arenas) {
+            if (arena.getStatus() == GameState.waiting || arena.getStatus() == GameState.starting) {
+                if (arena.addPlayer(player, false)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean joinRandomFromGroup(Player player, String groupName) {
+        for (IArena arena : arenas) {
+            if (arena.getGroup().equalsIgnoreCase(groupName)) {
+                if (arena.getStatus() == GameState.waiting || arena.getStatus() == GameState.starting) {
+                    if (arena.addPlayer(player, false)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // -------------------------------------------------------------
 
     private List<Player> players = new ArrayList<>();
     private List<Player> spectators = new ArrayList<>();
@@ -714,4 +765,26 @@ public class Arena implements IArena {
         // Method implementation logic continues here...
         return true;
     }
+
+    // Explicit fallback implementations to complete abstract requirements
+    @Override public String getArenaName() { return arenaName; }
+    @Override public World getWorld() { return world; }
+    @Override public GameState getStatus() { return status; }
+    @Override public void changeStatus(GameState status) { this.status = status; }
+    @Override public String getGroup() { return group; }
+    @Override public List<Player> getPlayers() { return players; }
+    @Override public int getMaxPlayers() { return maxPlayers; }
+    @Override public boolean isSpectator(Player p) { return spectators.contains(p); }
+    @Override public boolean isPlayer(Player p) { return players.contains(p); }
+    @Override public void removePlayer(Player p, boolean b) { players.remove(p); arenaByPlayer.remove(p); }
+    @Override public void removeSpectator(Player p, boolean b) { spectators.remove(p); arenaByPlayer.remove(p); }
+    @Override public List<ITeam> getTeams() { return teams; }
+    @Override public ITeam getTeam(String name) { return teams.stream().filter(t -> t.getName().equalsIgnoreCase(name)).findFirst().orElse(null); }
+    @Override public Location getWaitingLocation() { return waitingLocation; }
+    @Override public ArenaConfig getConfig() { return cm; }
+    @Override public void registerSigns() {}
+    @Override public void refreshSigns() {}
+    @Override public void registerScoreboards() {}
+    @Override public void sendPreGameCommandItems(Player p) {}
+    @Override public String getWorldName() { return worldName; }
 }
