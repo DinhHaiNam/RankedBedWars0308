@@ -777,6 +777,11 @@ public class Arena implements IArena {
         return getBedsTeam(loc) != null;
     }
 
+    @Override
+    public boolean isAllowMapBreak() {
+        return allowMapBreak;
+    }
+
     @Override public int getMagicMilkTime() { return magicMilkTime; }
     @Override public String getArenaName() { return arenaName; }
     @Override public World getWorld() { return world; }
