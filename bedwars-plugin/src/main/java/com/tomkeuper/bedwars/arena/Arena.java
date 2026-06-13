@@ -755,6 +755,11 @@ public class Arena implements IArena {
         this.enderDragonDestory = value;
     }
 
+    @Override
+    public boolean isAllowEnderDragonDestroy() {
+        return enderDragonDestory;
+    }
+
     @Override public int getMagicMilkTime() { return magicMilkTime; }
     @Override public String getArenaName() { return arenaName; }
     @Override public World getWorld() { return world; }
