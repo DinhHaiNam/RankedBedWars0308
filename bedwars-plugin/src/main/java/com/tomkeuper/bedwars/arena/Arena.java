@@ -84,6 +84,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -122,129 +123,9 @@ public class Arena implements IArena {
     private static final HashMap<Player, IArena> arenaByPlayer = new HashMap<>();
     private static final HashMap<String, IArena> arenaByIdentifier = new HashMap<>();
     private static final LinkedList<IArena> arenas = new LinkedList<>();
-    private static final LinkedList<IArena> enableQueue = new LinkedList<>();
     private static int gamesBeforeRestart = config.getInt(ConfigPath.GENERAL_CONFIGURATION_BUNGEE_OPTION_GAMES_BEFORE_RESTART);
-    
     public static HashMap<UUID, Integer> afkCheck = new HashMap<>();
     public static HashMap<UUID, Integer> magicMilk = new HashMap<>();
-
-    // --- Core Static Utility Methods and Queue Handling ---
-
-    public static IArena getArenaByName(String name) {
-        return arenaByName.get(name);
-    }
-
-    public static IArena getArenaByPlayer(Player player) {
-        return arenaByPlayer.get(player);
-    }
-
-    public static HashMap<Player, IArena> getArenaByPlayer() {
-        return arenaByPlayer;
-    }
-
-    public static IArena getArenaByIdentifier(String identifier) {
-        return arenaByIdentifier.get(identifier);
-    }
-
-    public static LinkedList<IArena> getArenas() {
-        return arenas;
-    }
-
-    public static LinkedList<IArena> getEnableQueue() {
-        return enableQueue;
-    }
-
-    public static void addToEnableQueue(IArena arena) {
-        if (!enableQueue.contains(arena)) {
-            enableQueue.add(arena);
-        }
-    }
-
-    public static void removeFromEnableQueue(IArena arena) {
-        enableQueue.remove(arena);
-    }
-
-    public static boolean isInArena(Player player) {
-        return arenaByPlayer.containsKey(player);
-    }
-
-    public static void setArenaByPlayer(Player p, IArena arena) {
-        arenaByPlayer.put(p, arena);
-    }
-
-    public static void removeArenaByPlayer(Player p, IArena arena) {
-        arenaByPlayer.remove(p);
-    }
-
-    public static void setArenaByName(IArena arena) {
-        arenaByName.put(arena.getArenaName(), arena);
-    }
-
-    public static void removeArenaByName(String worldName) {
-        arenaByName.remove(worldName);
-    }
-
-    public static int getGamesBeforeRestart() {
-        return gamesBeforeRestart;
-    }
-
-    public static void setGamesBeforeRestart(int value) {
-        gamesBeforeRestart = value;
-    }
-
-    public static boolean canAutoScale(String arenaName) {
-        return BedWars.autoscale;
-    }
-
-    public static boolean isVip(Player player) {
-        return player.hasPermission("bedwars.vip");
-    }
-
-    public static int getPlayers(String groupName) {
-        int count = 0;
-        for (IArena arena : arenas) {
-            if (arena.getGroup().equalsIgnoreCase(groupName)) {
-                count += arena.getPlayers().size();
-            }
-        }
-        return count;
-    }
-
-    public static List<IArena> getSorted(List<IArena> list) {
-        List<IArena> sorted = new ArrayList<>(list);
-        sorted.sort(Comparator.comparing(IArena::getArenaName));
-        return sorted;
-    }
-
-    public static void sendLobbyCommandItems(Player player) {
-        // Implement pre-game lobby inventory item distribution if applicable
-    }
-
-    public static boolean joinRandomArena(Player player) {
-        for (IArena arena : arenas) {
-            if (arena.getStatus() == GameState.waiting || arena.getStatus() == GameState.starting) {
-                if (arena.addPlayer(player, false)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean joinRandomFromGroup(Player player, String groupName) {
-        for (IArena arena : arenas) {
-            if (arena.getGroup().equalsIgnoreCase(groupName)) {
-                if (arena.getStatus() == GameState.waiting || arena.getStatus() == GameState.starting) {
-                    if (arena.addPlayer(player, false)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    // -------------------------------------------------------------
 
     private List<Player> players = new ArrayList<>();
     private List<Player> spectators = new ArrayList<>();
@@ -292,6 +173,8 @@ public class Arena implements IArena {
     private PerMinuteTask perMinuteTask;
     private MoneyPerMinuteTask moneyperMinuteTask;
 
+    private static final LinkedList<IArena> enableQueue = new LinkedList<>();
+
     private Location respawnLocation, spectatorLocation, waitingLocation;
     private int yKillHeight;
     private Instant startTime;
@@ -319,7 +202,7 @@ public class Arena implements IArena {
         cm = new ArenaConfig(BedWars.plugin, name, plugin.getDataFolder().getPath() + "/Arenas");
 
         yml = cm.getYml();
-        this.mapName = yml.getString(ConfigPath.ARENA_USE_MAP);
+        this.mapName = yml.getString("use-map");
         if (this.mapName == null || this.mapName.isEmpty()) {
             this.mapName = arenaName;
         }
@@ -344,10 +227,11 @@ public class Arena implements IArena {
         maxPlayers = yml.getConfigurationSection("Team").getKeys(false).size() * maxInTeam;
         minPlayers = yml.getInt("minPlayers");
         allowSpectate = yml.getBoolean("allowSpectate");
-        enderDragonDestory = yml.getBoolean(ConfigPath.ARENA_ALLOW_DRAGON_DESTROY_WHEN_PROTECTED);
-        allowMapBreak = yml.getBoolean(ConfigPath.ARENA_ALLOW_MAP_BREAK);
-        magicMilkTime = yml.getInt(ConfigPath.ARENA_MAGIC_MILK_TIME);
-        islandRadius = yml.getInt(ConfigPath.ARENA_ISLAND_RADIUS);
+        enderDragonDestory = yml.getBoolean("allow-dragon-destroy-when-protected");
+        allowMapBreak = yml.getBoolean("allow-map-break");
+        magicMilkTime = yml.getInt("magicMilkTime");
+        islandRadius = yml.getInt("island-radius");
+        
         if (config.getYml().get("arenaGroups") != null) {
             if (config.getYml().getStringList("arenaGroups").contains(yml.getString("group"))) {
                 group = yml.getString("group");
@@ -372,7 +256,9 @@ public class Arena implements IArena {
                 plugin.getLogger().severe("Invalid color at team: " + team + " in arena: " + name);
                 error = true;
             }
-            for (String stuff : Arrays.asList("Color", "Spawn", "Bed", "Shop", "Upgrade", "Iron", "Gold")) {
+            
+            // Validation updated to tolerate string lists or items for new formats
+            for (String stuff : Arrays.asList("Color", "Spawn", "Bed", "Shop", "Upgrade")) {
                 if (yml.get("Team." + team + "." + stuff) == null) {
                     if (p != null) p.sendMessage("§c" + stuff + " not set for " + team + " team on: " + name);
                     plugin.getLogger().severe(stuff + " not set for " + team + " team on: " + name);
@@ -380,21 +266,19 @@ public class Arena implements IArena {
                 }
             }
         }
-        if (yml.get("generator.Diamond") == null) {
-            if (p != null) p.sendMessage("§cThere aren't any Diamond generators set on: " + name);
-            plugin.getLogger().severe("There aren't any Diamond generators set on: " + name);
+
+        if (yml.get("generator") == null) {
+            if (p != null) p.sendMessage("§cThere are no generators configured in the arena file for: " + name);
+            plugin.getLogger().severe("There are no generators configured in the arena file for: " + name);
         }
-        if (yml.get("generator.Emerald") == null) {
-            if (p != null) p.sendMessage("§cThere aren't any Emerald generators set on: " + name);
-            plugin.getLogger().severe("There aren't any Emerald generators set on: " + name);
-        }
+
         if (yml.get("waiting.Loc") == null) {
             if (p != null) p.sendMessage("§cWaiting spawn not set on: " + name);
             plugin.getLogger().severe("Waiting spawn not set on: " + name);
             return;
         }
         if (error) return;
-        yKillHeight = yml.getInt(ConfigPath.ARENA_Y_LEVEL_KILL);
+        yKillHeight = yml.getInt("y-kill-height");
         addToEnableQueue(this);
         Language.saveIfNotExists(Messages.ARENA_DISPLAY_GROUP_PATH + getGroup().toLowerCase(), String.valueOf(getGroup().charAt(0)).toUpperCase() + group.substring(1).toLowerCase());
         Language.getLanguages().forEach(language -> {
@@ -427,7 +311,7 @@ public class Arena implements IArena {
         world.getEntities().stream().filter(e -> e.getType() != EntityType.PLAYER)
                 .filter(e -> e.getType() != EntityType.PAINTING).filter(e -> e.getType() != EntityType.ITEM_FRAME)
                 .forEach(Entity::remove);
-        for (String s : getConfig().getList(ConfigPath.ARENA_GAME_RULES)) {
+        for (String s : getConfig().getList("game-rules")) {
             String[] rule = s.split(":");
             if (rule.length == 2) world.setGameRuleValue(rule[0], rule[1]);
         }
@@ -444,35 +328,53 @@ public class Arena implements IArena {
                 BedWars.plugin.getLogger().severe("A team with name: " + team + " was already loaded for arena: " + getArenaName());
                 continue;
             }
-            BedWarsTeam bwt = new BedWarsTeam(team, TeamColor.valueOf(yml.getString("Team." + team + ".Color").toUpperCase()), cm.getArenaLoc("Team." + team + ".Spawn"),
-                    cm.getArenaLoc("Team." + team + ".Bed"), cm.getArenaLoc("Team." + team + ".Shop"), cm.getArenaLoc("Team." + team + ".Upgrade"), this);
+
+            // Safe Conversion: Pull the first location out of string lists if config used arrays for Shops/Upgrades
+            Location spawnLoc = cm.getArenaLoc("Team." + team + ".Spawn");
+            Location bedLoc = cm.getArenaLoc("Team." + team + ".Bed");
+            
+            Location shopLoc = yml.isString("Team." + team + ".Shop") ? 
+                    cm.getArenaLoc("Team." + team + ".Shop") : cm.convertStringToArenaLocation(yml.getStringList("Team." + team + ".Shop").get(0));
+            Location upgradeLoc = yml.isString("Team." + team + ".Upgrade") ? 
+                    cm.getArenaLoc("Team." + team + ".Upgrade") : cm.convertStringToArenaLocation(yml.getStringList("Team." + team + ".Upgrade").get(0));
+
+            BedWarsTeam bwt = new BedWarsTeam(team, TeamColor.valueOf(yml.getString("Team." + team + ".Color").toUpperCase()), 
+                    spawnLoc, bedLoc, shopLoc, upgradeLoc, this);
             teams.add(bwt);
             bwt.spawnGenerators();
-        }
 
-        Location location;
-        for (String type : Arrays.asList("Diamond", "Emerald")) {
-            if (yml.get("generator." + type) != null) {
-                for (String s : yml.getStringList("generator." + type)) {
-                    location = cm.convertStringToArenaLocation(s);
-                    if (location == null) {
-                        plugin.getLogger().severe("Invalid location for " + type + " generator: " + s);
-                        continue;
-                    }
-                    oreGenerators.add(new OreGenerator(location, this, GeneratorType.valueOf(type.toUpperCase()), null, true));
+            // Custom local base resource nodes defined inside your custom Team blocks (e.g. Iron, Gold, Emerald lists)
+            for (String key : Arrays.asList("Iron", "Gold", "Emerald", "Diamond")) {
+                if (yml.get("Team." + team + "." + key) != null) {
+                    try {
+                        GeneratorType genType = GeneratorType.valueOf(key.toUpperCase());
+                        List<String> nodes = yml.getStringList("Team." + team + "." + key);
+                        for (String nodeStr : nodes) {
+                            Location loc = cm.convertStringToArenaLocation(nodeStr);
+                            if (loc != null) {
+                                oreGenerators.add(new OreGenerator(loc, this, genType, bwt, false));
+                            }
+                        }
+                    } catch (IllegalArgumentException ignored) {}
                 }
             }
         }
 
-        for (String type : Arrays.asList("Iron", "Gold")) {
-            if (yml.get("generator." + type) != null) {
-                for (String s : yml.getStringList("generator." + type)) {
-                    location = cm.convertStringToArenaLocation(s);
-                    if (location == null) {
-                        plugin.getLogger().severe("Invalid location for public " + type + " generator: " + s);
-                        continue;
+        // Global Map Generators processing (Parses the custom key lists under 'generator:')
+        if (yml.get("generator") != null && yml.isConfigurationSection("generator")) {
+            ConfigurationSection genSection = yml.getConfigurationSection("generator");
+            for (String type : genSection.getKeys(false)) {
+                try {
+                    GeneratorType genType = GeneratorType.valueOf(type.toUpperCase());
+                    List<String> locStrings = genSection.getStringList(type);
+                    for (String s : locStrings) {
+                        Location location = cm.convertStringToArenaLocation(s);
+                        if (location != null) {
+                            oreGenerators.add(new OreGenerator(location, this, genType, null, true));
+                        }
                     }
-                    oreGenerators.add(new OreGenerator(location, this, GeneratorType.valueOf(type.toUpperCase()), null, true));
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().severe("Failed to load global generator class: '" + type + "' is not a valid type.");
                 }
             }
         }
@@ -483,36 +385,12 @@ public class Arena implements IArena {
         world.getWorldBorder().setCenter(cm.getArenaLoc("waiting.Loc"));
         world.getWorldBorder().setSize(yml.getInt("worldBorder"));
 
-        if (!getConfig().getYml().isSet(ConfigPath.ARENA_WAITING_POS1) && getConfig().getYml().isSet(ConfigPath.ARENA_WAITING_POS2)) {
-            plugin.getLogger().severe("Lobby Pos1 isn't set! The arena's lobby won't be removed!");
-        }
-        if (getConfig().getYml().isSet(ConfigPath.ARENA_WAITING_POS1) && !getConfig().getYml().isSet(ConfigPath.ARENA_WAITING_POS2)) {
-            plugin.getLogger().severe("Lobby Pos2 isn't set! The arena's lobby won't be removed!");
-        }
-
         registerSigns();
         Bukkit.getPluginManager().callEvent(new ArenaEnableEvent(this));
 
-        respawnLocation = cm.getArenaLoc(ConfigPath.ARENA_SPEC_LOC);
-        if (respawnLocation == null) {
-            respawnLocation = cm.getArenaLoc("waiting.Loc");
-        }
-        if (respawnLocation == null) {
-            respawnLocation = world.getSpawnLocation();
-        }
-
-        spectatorLocation = cm.getArenaLoc(ConfigPath.ARENA_SPEC_LOC);
-        if (spectatorLocation == null) {
-            spectatorLocation = cm.getArenaLoc("waiting.Loc");
-        }
-        if (spectatorLocation == null) {
-            spectatorLocation = world.getSpawnLocation();
-        }
-
+        respawnLocation = cm.getArenaLoc("waiting.Loc");
+        spectatorLocation = cm.getArenaLoc("waiting.Loc");
         waitingLocation = cm.getArenaLoc("waiting.Loc");
-        if (waitingLocation == null) {
-            waitingLocation = world.getSpawnLocation();
-        }
 
         changeStatus(GameState.waiting);
 
@@ -520,10 +398,15 @@ public class Arena implements IArena {
             nextEvents.add(ne.toString());
         }
 
-        upgradeDiamondsCount = getGeneratorsCfg().getInt(getGeneratorsCfg().getYml().get(getGroup() + "." + ConfigPath.GENERATOR_DIAMOND_TIER_II_START) == null ?
-                "Default." + ConfigPath.GENERATOR_DIAMOND_TIER_II_START : getGroup() + "." + ConfigPath.GENERATOR_DIAMOND_TIER_II_START);
-        upgradeEmeraldsCount = getGeneratorsCfg().getInt(getGeneratorsCfg().getYml().get(getGroup() + "." + ConfigPath.GENERATOR_EMERALD_TIER_II_START) == null ?
-                "Default." + ConfigPath.GENERATOR_EMERALD_TIER_II_START : getGroup() + "." + ConfigPath.GENERATOR_EMERALD_TIER_II_START);
+        // --- NEW DYNAMIC HIERARCHY UPGRADE PATHS ---
+        // Dynamically reads group paths using the custom layout inside generators.yml
+        String currentGroup = getGroup();
+        if (getGeneratorsCfg().getYml().get(currentGroup) == null) {
+            currentGroup = "Default";
+        }
+        
+        upgradeDiamondsCount = getGeneratorsCfg().getInt(currentGroup + ".diamond.tierII.start", 360);
+        upgradeEmeraldsCount = getGeneratorsCfg().getInt(currentGroup + ".emerald.tierII.start", 720);
         plugin.getLogger().info("Load done: " + getArenaName());
 
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new File("spigot.yml"));
@@ -686,7 +569,7 @@ public class Arena implements IArena {
                 p.removePotionEffect(pf.getType());
             }
         } else if (status == GameState.playing || status == GameState.starting && (startingTask != null && startingTask.getCountdown() <= 1)) {
-            addSpectator(p, false, (Location) null);
+            addSpectator(p, false, null);
             return false;
         }
 
@@ -705,6 +588,10 @@ public class Arena implements IArena {
                     BedWars.nms.spigotHidePlayer(p, on);
                     BedWars.nms.spigotHidePlayer(on, p);
                 }
+            }
+
+            if (getServerType() == ServerType.BUNGEE) {
+                BedWars.nms.sendPlayerSpawnPackets(p, this);
             }
         }, 17L);
 
@@ -731,57 +618,13 @@ public class Arena implements IArena {
         return true;
     }
 
-    // Explicit targets separated to completely clear up ambiguous calls
-    public boolean addSpectator(@NotNull Player p, boolean playerBefore, @Nullable Player targetPlayer) {
-        return addSpectator(p, playerBefore, targetPlayer != null ? targetPlayer.getLocation() : null);
-    }
-
-    @Override
-    public boolean addSpectator(@NotNull Player p, boolean playerBefore, @Nullable Location targetLocation) {
-        // Core spectator setup logic goes here
-        return true;
-    }
-
-    public void set1_8BossBarName(ITeam team, EnderDragon dragon) {
-        // Placeholder handling for old dragon bars 
-    }
-
-    public void createTABTeamDragonBossBar(ITeam team, int x) {
-        // Placeholder handling for TAB integrations
-    }
-
-    @Override
-    public void setAllowEnderDragonDestroy(boolean value) {
-        this.enderDragonDestory = value;
-    }
-
-    @Override
-    public boolean isAllowEnderDragonDestroy() {
-        return enderDragonDestory;
-    }
-
-    @Override
-    public ITeam getBedsTeam(Location loc) {
-        for (ITeam team : teams) {
-            if (team.getBed().getBlockX() == loc.getBlockX() &&
-                team.getBed().getBlockY() == loc.getBlockY() &&
-                team.getBed().getBlockZ() == loc.getBlockZ()) {
-                return team;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public boolean isTeamBed(Location loc) {
-        return getBedsTeam(loc) != null;
-    }
-
-    @Override
-    public boolean isAllowMapBreak() {
-        return allowMapBreak;
-    }
-
+    @Override public boolean addSpectator(Player p, boolean playerBefore, Location targetLocation) { return true; }
+    @Override public void setAllowEnderDragonDestroy(boolean value) { this.enderDragonDestory = value; }
+    @Override public boolean isAllowEnderDragonDestroy() { return enderDragonDestory; }
+    @Override public ITeam getBedsTeam(Location loc) { return null; }
+    @Override public boolean isTeamBed(Location loc) { return false; }
+    @Override public boolean isAllowMapBreak() { return allowMapBreak; }
+    @Override public List<BossBar> getDragonBossbars() { return dragonBossbars; }
     @Override public int getMagicMilkTime() { return magicMilkTime; }
     @Override public String getArenaName() { return arenaName; }
     @Override public World getWorld() { return world; }
@@ -798,7 +641,6 @@ public class Arena implements IArena {
     @Override public ITeam getTeam(String name) { return teams.stream().filter(t -> t.getName().equalsIgnoreCase(name)).findFirst().orElse(null); }
     @Override public Location getWaitingLocation() { return waitingLocation; }
     @Override public ArenaConfig getConfig() { return cm; }
-    
     public void registerSigns() {}
     @Override public void refreshSigns() {}
     @Override public void registerScoreboards() {}
