@@ -566,7 +566,7 @@ public class BedWars extends JavaPlugin {
 
         /* Prevent issues on reload */
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.kickPlayer("BedWars2023 was RELOADED! (do not reload plugins)");
+            p.kickPlayer("RankedBedWars0308 was RELOADED! (do not reload plugins)");
         }
 
         /* Load sounds configuration */
@@ -700,7 +700,7 @@ public class BedWars extends JavaPlugin {
         // Send startup message, delayed to make sure everything is loaded and registered.
         Bukkit.getScheduler().runTaskLater(this, () -> {
             this.getLogger().info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            this.getLogger().info("BedWars2023 v" + plugin.getDescription().getVersion() + " has been enabled!");
+            this.getLogger().info("RankedBedwars0308 v" + plugin.getDescription().getVersion() + " has been enabled!");
             this.getLogger().info("");
             this.getLogger().info("Server Type: " + getServerType().toString() + (getServerType() == ServerType.BUNGEE ? " (ServerID: " + config.getString(ConfigPath.GENERAL_CONFIGURATION_BUNGEE_OPTION_SERVER_ID) + ")" : ""));
             this.getLogger().info("Auto Scale: " + autoscale);
