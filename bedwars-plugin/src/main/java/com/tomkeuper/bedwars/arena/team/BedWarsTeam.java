@@ -300,8 +300,7 @@ public class BedWarsTeam implements ITeam {
                 nms.spawnShopHologram(
                         loc,
                         upgradeName,
-                        arena.getPlayers(),
-                        this
+                        arena.getPlayers()
                 );
             }
     
@@ -322,8 +321,7 @@ public class BedWarsTeam implements ITeam {
                 nms.spawnShopHologram(
                         loc,
                         shopName,
-                        arena.getPlayers(),
-                        this
+                        arena.getPlayers()
                 );
             }
     

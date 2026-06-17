@@ -222,7 +222,8 @@ public final class v1_21_R1 extends VersionSupport {
     }
 
     @Override
-    public void spawnShopHologram(Location loc, String name1, Iterable<Player> players, ITeam team) {
+    //public void spawnShopHologram(Location loc, String name1, Iterable<Player> players, ITeam team) {
+    public void spawnShopHologram(Location loc, String name1, Iterable<Player> players) {
         HashMap<String, List<Player>> languagePlayers = new HashMap<>();
 
         for (Player p : players) {
@@ -235,7 +236,7 @@ public final class v1_21_R1 extends VersionSupport {
             Language lang = Language.getLang(iso);
             String[] text = (lang.l(name1) == null || lang.l(name1).isEmpty() ? lang.l(name1.replace(name1.split("\\.")[2], "default")) : lang.l(name1)).toArray(new String[0]);
             IHologram h = createHologram(languagePlayers.get(iso), loc, text);
-            new ShopHolo(h, team, iso);
+            new ShopHolo(h, iso);
         }
     }
 

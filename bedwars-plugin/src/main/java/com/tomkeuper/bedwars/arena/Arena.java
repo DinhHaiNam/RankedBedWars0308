@@ -375,7 +375,7 @@ public class Arena implements IArena {
             bwt.spawnGenerators();
         }
 
-        //Load diamond/ emerald generators
+        //Load diamond / emerald / iron / gold generators
         Location location;
         for (String type : Arrays.asList("Diamond", "Emerald", "Iron", "Gold")) {
             if (yml.get("generator." + type) != null) {
@@ -418,7 +418,8 @@ public class Arena implements IArena {
                         nms.spawnShop(
                             location,
                             upgradeName,
-                            this.getPlayers()
+                            this.getPlayers(),
+                            this
                         );
 
                         nms.spawnShopHologram(

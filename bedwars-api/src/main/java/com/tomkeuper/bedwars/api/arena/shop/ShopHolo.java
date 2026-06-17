@@ -36,13 +36,14 @@ public class ShopHolo {
     private final String iso;
     @Getter
     private final IArena arena;
-    @Getter
-    private final ITeam team;
+    //@Getter
+    //private final ITeam team;
 
-    public ShopHolo(@Nonnull IHologram hologram, @Nonnull ITeam team, @Nonnull String iso) {
+    //public ShopHolo(@Nonnull IHologram hologram, @Nonnull ITeam team, @Nonnull String iso) {
+    public ShopHolo(@Nonnull IHologram hologram, @Nonnull String iso) {
         this.hologram = hologram;
         this.team = team;
-        this.arena = team.getArena();
+        //this.arena = team.getArena();
         this.iso = iso;
         arena.addShopHologram(iso, this);
     }
