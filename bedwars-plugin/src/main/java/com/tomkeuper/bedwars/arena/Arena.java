@@ -390,6 +390,9 @@ public class Arena implements IArena {
             }
         }
 
+        String shopName = "shop";
+        String upgradeName = "upgrade";
+        
         for (String type : Arrays.asList("Shop", "Upgrade")) {
             if (yml.get("npcs." + type) != null) {
                 for (String s : yml.getStringList("npcs." + type)) {
