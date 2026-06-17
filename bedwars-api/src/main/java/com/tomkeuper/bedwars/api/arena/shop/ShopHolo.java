@@ -21,7 +21,6 @@
 package com.tomkeuper.bedwars.api.arena.shop;
 
 import com.tomkeuper.bedwars.api.arena.IArena;
-import com.tomkeuper.bedwars.api.arena.team.ITeam;
 import com.tomkeuper.bedwars.api.hologram.containers.IHologram;
 import lombok.Getter;
 import org.bukkit.entity.Player;
@@ -34,8 +33,8 @@ public class ShopHolo {
     private final IHologram hologram;
     @Getter
     private final String iso;
-    @Getter
-    private final IArena arena;
+    //@Getter
+    //private final IArena arena;
     //@Getter
     //private final ITeam team;
 
