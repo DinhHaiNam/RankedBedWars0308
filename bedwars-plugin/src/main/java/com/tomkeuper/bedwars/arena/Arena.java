@@ -404,14 +404,14 @@ public class Arena implements IArena {
                         nms.spawnShop(
                             location,
                             shopName,
-                            getPlayers(),
-                            arena
+                            this.getPlayers(),
+                            this
                         );
 
                         nms.spawnShopHologram(
                             location,
                             shopName,
-                            getPlayers(),
+                            this.getPlayers(),
                             this
                         );
                     }
@@ -419,15 +419,15 @@ public class Arena implements IArena {
                         nms.spawnShop(
                             location,
                             upgradeName,
-                            getPlayers(),
-                            arena
+                            this.getPlayers(),
+                            this
                         );
 
                         nms.spawnShopHologram(
                             location,
                             upgradeName,
-                            getPlayers(),
-                            arena
+                            this.getPlayers(),
+                            this
                         );
                     }
                 }
