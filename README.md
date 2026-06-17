@@ -1,8 +1,6 @@
-![Bedwars2023_Logo](https://github.com/tomkeuper/BedWars2023/assets/29728836/5979c0e8-1333-40a5-b43c-49ceabd06a57)
+![RankedBedWars0308 Logo](https://i.ibb.co/jN8Trp4/logo.png)
 
-[![Discord](https://discordapp.com/api/guilds/760851292826107926/widget.png?style=shield)](https://discord.gg/kPaBGwhmjf) [![bStats](https://img.shields.io/bstats/servers/18317)](#)
-
-As of May 2026 development has started on RankedBedWars0308 a fork of [BedWars2023](https://github.com/tomkeuper/BedWars2023) which is a fork of the [BedWars1058](https://www.spigotmc.org/resources/bedwars1058-opensource.97320/) plugin. The goal of this fork is adding some features for ranked bedwars arenas.
+As of May 2026 development has started on RankedBedWars0308 a fork of [BedWars2023](https://github.com/tomkeuper/BedWars2023), which is a fork of the [BedWars1058](https://www.spigotmc.org/resources/bedwars1058-opensource.97320/) plugin. The goal of this fork is adding some features for ranked bedwars arenas.
 
 The plugin is published under the open-source GNU GPL 3.0 license. You can read the full license [here](https://www.gnu.org/licenses/gpl-3.0.html).
 
@@ -141,5 +139,5 @@ If you get disconnected, or if you leave a game (configurable) you can re-join i
 - [H2](https://www.h2database.com/html/main.html)
 - [VipFeatures](https://gitlab.com/andrei1058/VipFeatures)
 
-# Contact
+# Contact (Bedwars2023)
 [![Discord Server](https://discordapp.com/api/guilds/760851292826107926/widget.png?style=banner3)](https://discord.gg/kPaBGwhmjf)

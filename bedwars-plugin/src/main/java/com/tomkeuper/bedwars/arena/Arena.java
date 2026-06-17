@@ -390,6 +390,47 @@ public class Arena implements IArena {
             }
         }
 
+        for (String type : Arrays.asList("Shop", "Upgrade")) {
+            if (yml.get("npcs." + type) != null) {
+                for (String s : yml.getStringList("npcs." + type)) {
+                    location = cm.convertStringToArenaLocation(s);
+                    if (location == null) {
+                        continue;
+                    }
+                    if (type == "Shop") {
+                        nms.spawnShop(
+                            location,
+                            shopName,
+                            arena.getPlayers(),
+                            arena
+                        );
+
+                        nms.spawnShopHologram(
+                            location,
+                            shopName,
+                            arena.getPlayers(),
+                            this
+                        );
+                    }
+                    else if (type == "Upgrade") {
+                        nms.spawnShop(
+                            location,
+                            upgradeName,
+                            arena.getPlayers(),
+                            arena
+                        );
+
+                        nms.spawnShopHologram(
+                            location,
+                            upgradeName,
+                            arena.getPlayers(),
+                            arena
+                        );
+                    }
+                }
+            }
+        }
+
         arenas.add(this);
         arenaByName.put(getArenaName(), this);
         arenaByIdentifier.put(worldName, this);
