@@ -411,23 +411,20 @@ public class Arena implements IArena {
                         nms.spawnShopHologram(
                             location,
                             shopName,
-                            this.getPlayers(),
-                            this
+                            this.getPlayers()
                         );
                     }
                     else if (type == "Upgrade") {
                         nms.spawnShop(
                             location,
                             upgradeName,
-                            this.getPlayers(),
-                            this
+                            this.getPlayers()
                         );
 
                         nms.spawnShopHologram(
                             location,
                             upgradeName,
-                            this.getPlayers(),
-                            this
+                            this.getPlayers()
                         );
                     }
                 }
