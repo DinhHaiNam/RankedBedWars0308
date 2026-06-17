@@ -33,8 +33,8 @@ public class ShopHolo {
     private final IHologram hologram;
     @Getter
     private final String iso;
-    //@Getter
-    //private final IArena arena;
+    @Getter
+    private final IArena arena;
     //@Getter
     //private final ITeam team;
 
