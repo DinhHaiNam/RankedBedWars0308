@@ -392,7 +392,7 @@ public class Arena implements IArena {
 
         @Getter
         private Arena arena;
-        
+
         for (String type : Arrays.asList("Shop", "Upgrade")) {
             if (yml.get("npcs." + type) != null) {
                 for (String s : yml.getStringList("npcs." + type)) {
@@ -404,14 +404,14 @@ public class Arena implements IArena {
                         nms.spawnShop(
                             location,
                             shopName,
-                            arena.getPlayers(),
+                            getPlayers(),
                             arena
                         );
 
                         nms.spawnShopHologram(
                             location,
                             shopName,
-                            arena.getPlayers(),
+                            getPlayers(),
                             this
                         );
                     }
@@ -419,14 +419,14 @@ public class Arena implements IArena {
                         nms.spawnShop(
                             location,
                             upgradeName,
-                            arena.getPlayers(),
+                            getPlayers(),
                             arena
                         );
 
                         nms.spawnShopHologram(
                             location,
                             upgradeName,
-                            arena.getPlayers(),
+                            getPlayers(),
                             arena
                         );
                     }
