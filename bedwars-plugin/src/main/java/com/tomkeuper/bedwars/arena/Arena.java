@@ -411,7 +411,8 @@ public class Arena implements IArena {
                         nms.spawnShopHologram(
                             location,
                             shopName,
-                            this.getPlayers()
+                            this.getPlayers(),
+                            this
                         );
                     }
                     else if (type == "Upgrade") {
@@ -425,7 +426,8 @@ public class Arena implements IArena {
                         nms.spawnShopHologram(
                             location,
                             upgradeName,
-                            this.getPlayers()
+                            this.getPlayers(),
+                            this
                         );
                     }
                 }

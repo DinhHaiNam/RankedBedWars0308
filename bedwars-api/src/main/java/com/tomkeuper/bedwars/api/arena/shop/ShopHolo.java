@@ -40,10 +40,11 @@ public class ShopHolo {
     //private final ITeam team;
 
     //public ShopHolo(@Nonnull IHologram hologram, @Nonnull ITeam team, @Nonnull String iso) {
-    public ShopHolo(@Nonnull IHologram hologram, @Nonnull String iso) {
+    public ShopHolo(@Nonnull IHologram hologram, @Nonnull String iso, @Nonnull IArena arena) {
         this.hologram = hologram;
         //this.team = team;
-        this.arena = team.getArena();
+        //this.arena = team.getArena();
+        this.arena = arena;
         this.iso = iso;
         arena.addShopHologram(iso, this);
     }
