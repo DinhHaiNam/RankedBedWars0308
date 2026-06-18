@@ -49,6 +49,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
 public interface IArena {
+    List<Location> getPublicShops();
+    List<Location> getPublicUpgrades();
+
+    boolean isPublicShopSpawned();
+
+    void spawnPublicNPCs();
 
     /**
      * Linked shop layout for this arena. Implementations may resolve per-arena/group/default.
