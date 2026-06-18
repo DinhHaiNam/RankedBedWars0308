@@ -1453,16 +1453,6 @@ public class Arena implements IArena {
     }
 
     @Override
-    public List<Location> getPublicShops() {
-        return this.publicShops;
-    }
-
-    @Override
-    public List<Location> getPublicUpgrades() {
-        return this.publicUpgrades;
-    }
-
-    @Override
     public int getPlayerKills(Player p, boolean finalKills) {
         if (finalKills) return playerFinalKills.getOrDefault(p, 0);
         return playerKills.getOrDefault(p.getName(), 0);
