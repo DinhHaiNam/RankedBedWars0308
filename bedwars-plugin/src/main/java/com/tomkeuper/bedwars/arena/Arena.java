@@ -394,41 +394,55 @@ public class Arena implements IArena {
         String upgradeName = "upgrade";
         
         for (String type : Arrays.asList("Shop", "Upgrade")) {
-            if (yml.get("npcs." + type) != null) {
+            String t = type;
+            if (yml.get("npcs." + t) != null) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    for (String s : yml.getStringList("npcs." + t)) {
+                        Location location = cm.convertStringToArenaLocation(s);
+                        if (location == null) continue;
+
+                        if ("Shop".equals(t)) {
+                            nms.spawnShop(location, shopName, this.getPlayers(), this);
+                            nms.spawnShopHologram(location, shopName, this.getPlayers(), this);
+                        } 
+                        else if ("Upgrade".equals(t)) {
+                            nms.spawnShop(location, upgradeName, this.getPlayers(), this);
+                            nms.spawnShopHologram(location, upgradeName, this.getPlayers(), this);
+                        }
+                    }
+
+                }, 20L);
+
                 for (String s : yml.getStringList("npcs." + type)) {
                     location = cm.convertStringToArenaLocation(s);
                     if (location == null) {
                         continue;
                     }
-                    if (type == "Shop") {
-                        nms.spawnShop(
-                            location,
-                            shopName,
-                            this.getPlayers(),
-                            this
-                        );
 
-                        nms.spawnShopHologram(
-                            location,
-                            shopName,
-                            this.getPlayers(),
-                            this
+                    if ("Upgrade".equals(type)) {
+                        Cuboid c1 = new Cuboid(
+                                location,
+                                this.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION),
+                                true
                         );
+                
+                        c1.setMinY(c1.getMinY() - 1);
+                        c1.setMaxY(c1.getMaxY() + 4);
+                
+                        this.getRegionsList().add(c1);
                     }
-                    else if (type == "Upgrade") {
-                        nms.spawnShop(
-                            location,
-                            upgradeName,
-                            this.getPlayers(),
-                            this
-                        );
 
-                        nms.spawnShopHologram(
-                            location,
-                            upgradeName,
-                            this.getPlayers(),
-                            this
+                    else if ("Shop".equals(type)) {
+                        Cuboid c2 = new Cuboid(
+                                location,
+                                this.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION),
+                                true
                         );
+                
+                        c2.setMinY(c2.getMinY() - 1);
+                        c2.setMaxY(c2.getMaxY() + 4);
+                
+                        this.getRegionsList().add(c2);
                     }
                 }
             }
