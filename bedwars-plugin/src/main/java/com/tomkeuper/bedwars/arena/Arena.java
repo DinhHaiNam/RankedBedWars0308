@@ -147,6 +147,18 @@ public class Arena implements IArena {
     private List<BossBar> dragonBossbars = new ArrayList<>();
     private List<Scoreboard> scoreboards = new ArrayList<>();
     private int renderDistance, magicMilkTime = 30;
+    private List<Location> publicShops = new ArrayList<>();
+    private List<Location> publicUpgrades = new ArrayList<>();
+
+    @Override
+    public List<Location> getShops() {
+        return shops;
+    }
+
+    @Override
+    public List<Location> getUpgrades() {
+        return upgrades;
+    }
 
     private final List<Player> leaving = new ArrayList<>();
 
@@ -391,31 +403,8 @@ public class Arena implements IArena {
             }
         }
 
-        private List<Location> loadNpcLocations(String path) {
-        
-            List<Location> locations = new ArrayList<>();
-        
-            for (String s : this.getConfig().getYml().getStringList(path)) {
-        
-                String[] split = s.split(",");
-        
-                if (split.length < 5) continue;
-        
-                locations.add(new Location(
-                        this.getWorld(),
-                        Double.parseDouble(split[0]),
-                        Double.parseDouble(split[1]),
-                        Double.parseDouble(split[2]),
-                        Float.parseFloat(split[3]),
-                        Float.parseFloat(split[4])
-                ));
-            }
-        
-            return locations;
-        }
-
-        private List<Location> publicShops = loadNpcLocations("npcs.Shop");
-        private List<Location> publicUpgrades = loadNpcLocations("npcs.Upgrade");
+        publicShops = loadNpcLocations("npcs.Shop");
+        publicUpgrades = loadNpcLocations("npcs.Upgrade");
 
         String shopName = "shop";
         String upgradeName = "upgrade";
@@ -1612,6 +1601,29 @@ public class Arena implements IArena {
             if (v.getX() == block.getX() && v.getY() == block.getY() && v.getZ() == block.getZ()) return true;
         }
         return false;
+    }
+
+    public List<Location> loadNpcLocations(String path) {
+        
+        List<Location> locations = new ArrayList<>();
+        
+        for (String s : this.getConfig().getYml().getStringList(path)) {
+        
+            String[] split = s.split(",");
+        
+            if (split.length < 5) continue;
+        
+            locations.add(new Location(
+                    this.getWorld(),
+                    Double.parseDouble(split[0]),
+                    Double.parseDouble(split[1]),
+                    Double.parseDouble(split[2]),
+                    Float.parseFloat(split[3]),
+                    Float.parseFloat(split[4])
+            ));
+        }
+        
+        return locations;
     }
 
     /**
