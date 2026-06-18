@@ -209,6 +209,29 @@ public class Arena implements IArena {
     private ITeamAssigner teamAssigner = new TeamAssigner();
     private String mapName;
 
+    public List<Location> loadNpcLocations(String path) {
+    
+        List<Location> locations = new ArrayList<>();
+    
+        for (String s : arena.getConfig().getYml().getStringList(path)) {
+    
+            String[] split = s.split(",");
+    
+            if (split.length < 5) continue;
+    
+            locations.add(new Location(
+                    arena.getWorld(),
+                    Double.parseDouble(split[0]),
+                    Double.parseDouble(split[1]),
+                    Double.parseDouble(split[2]),
+                    Float.parseFloat(split[3]),
+                    Float.parseFloat(split[4])
+            ));
+        }
+    
+        return locations;
+    }
+
     /**
      * Load an arena.
      * This will check if it was set up right.
@@ -391,8 +414,8 @@ public class Arena implements IArena {
             }
         }
 
-        publicShops = BedWarsTeam.loadNpcLocations("npcs.Shop");
-        publicUpgrades = BedWarsTeam.loadNpcLocations("npcs.Upgrade");
+        private List<Location> publicShops = loadNpcLocations("npcs.Shop");
+        private List<Location> publicUpgrades = loadNpcLocations("npcs.Upgrade");
 
         String shopName = "shop";
         String upgradeName = "upgrade";
@@ -423,28 +446,28 @@ public class Arena implements IArena {
     
             Cuboid c2 = new Cuboid(
                     loc,
-                    arena.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION),
+                    this.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION),
                     true
             );
     
             c2.setMinY(c2.getMinY() - 1);
             c2.setMaxY(c2.getMaxY() + 4);
     
-            arena.getRegionsList().add(c2);
+            this.getRegionsList().add(c2);
         }
         for (Location loc : publicUpgrades) {
             if (loc == null) continue;
     
             Cuboid c1 = new Cuboid(
                     loc,
-                    arena.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION),
+                    this.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION),
                     true
             );
     
             c1.setMinY(c1.getMinY() - 1);
             c1.setMaxY(c1.getMaxY() + 4);
     
-            arena.getRegionsList().add(c1);
+            this.getRegionsList().add(c1);
         }
 
         arenas.add(this);
