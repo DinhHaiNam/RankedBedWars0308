@@ -399,27 +399,52 @@ public class Arena implements IArena {
         String shopName = "shop";
         String upgradeName = "upgrade";
         
-        for (String type : Arrays.asList("Shop", "Upgrade")) {
-            String t = type;
-            if (yml.get("npcs." + t) != null) {
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    for (String s : yml.getStringList("npcs." + t)) {
-                        location = cm.convertStringToArenaLocation(s);
-                        if (location == null) continue;
-
-                        if ("Shop".equals(t)) {
-                            nms.spawnShop(location, shopName, this.getPlayers(), this);
-                            nms.spawnShopHologram(location, shopName, this.getPlayers(), this);
-                        } 
-                        else if ("Upgrade".equals(t)) {
-                            nms.spawnShop(location, upgradeName, this.getPlayers(), this);
-                            nms.spawnShopHologram(location, upgradeName, this.getPlayers(), this);
-                        }
-                    }
-
-                }, 20L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            /*
+             * Spawn Upgrade NPCs
+             */
+            for (Location loc : publicUpgrades) {
+    
+                if (loc == null || loc.getWorld() == null) continue;
+    
+                nms.spawnShop(
+                        loc,
+                        upgradeName,
+                        this.getPlayers(),
+                        this
+                );
+    
+                nms.spawnShopHologram(
+                        loc,
+                        upgradeName,
+                        this.getPlayers(),
+                        this
+                );
             }
-        }
+    
+            /*
+             * Spawn Shop NPCs
+             */
+            for (Location loc : publicShops) {
+    
+                if (loc == null || loc.getWorld() == null) continue;
+    
+                nms.spawnShop(
+                        loc,
+                        shopName,
+                        this.getPlayers(),
+                        this
+                );
+    
+                nms.spawnShopHologram(
+                        loc,
+                        shopName,
+                        this.getPlayers(),
+                        this
+                );
+            }
+    
+        }, 20L);
         for (Location loc : publicShops) {
             if (loc == null) continue;
     
