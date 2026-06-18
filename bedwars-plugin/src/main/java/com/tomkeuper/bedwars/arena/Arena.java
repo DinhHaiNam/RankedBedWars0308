@@ -150,16 +150,6 @@ public class Arena implements IArena {
     private List<Location> publicShops = new ArrayList<>();
     private List<Location> publicUpgrades = new ArrayList<>();
 
-    @Override
-    public List<Location> getShops() {
-        return shops;
-    }
-
-    @Override
-    public List<Location> getUpgrades() {
-        return upgrades;
-    }
-
     private final List<Player> leaving = new ArrayList<>();
 
     /**
