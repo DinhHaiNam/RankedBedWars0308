@@ -49,6 +49,7 @@ import com.tomkeuper.bedwars.api.items.handlers.IPermanentItem;
 import com.tomkeuper.bedwars.api.language.Language;
 import com.tomkeuper.bedwars.api.language.Messages;
 import com.tomkeuper.bedwars.api.region.Region;
+import com.tomkeuper.bedwars.api.region.Cuboid;
 import com.tomkeuper.bedwars.api.server.ServerType;
 import com.tomkeuper.bedwars.api.tasks.AnnouncementTask;
 import com.tomkeuper.bedwars.api.tasks.PlayingTask;
