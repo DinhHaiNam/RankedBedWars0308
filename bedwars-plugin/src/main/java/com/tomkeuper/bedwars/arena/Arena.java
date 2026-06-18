@@ -524,7 +524,7 @@ public class Arena implements IArena {
 
     @Override
     public boolean isPublicShopSpawned() {
-        return publicNPCsSpawned
+        return publicNPCsSpawned;
     }
 
     /**
