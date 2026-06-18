@@ -206,6 +206,30 @@ public class BedWarsTeam implements ITeam {
         Bukkit.getPluginManager().callEvent(new PlayerFirstSpawnEvent(p, getArena(), this));
     }
 
+    
+    private List<Location> loadNpcLocations(String path) {
+        
+        List<Location> locations = new ArrayList<>();
+        
+        for (String s : arena.getConfig().getYml().getStringList(path)) {
+        
+            String[] split = s.split(",");
+        
+            if (split.length < 5) continue;
+        
+            locations.add(new Location(
+                    arena.getWorld(),
+                    Double.parseDouble(split[0]),
+                    Double.parseDouble(split[1]),
+                    Double.parseDouble(split[2]),
+                    Float.parseFloat(split[3]),
+                    Float.parseFloat(split[4])
+            ));
+        }
+        
+        return locations;
+    }
+
     /**
      * Spawn shopkeepers for target team (if enabled).
      */

@@ -209,29 +209,6 @@ public class Arena implements IArena {
     private ITeamAssigner teamAssigner = new TeamAssigner();
     private String mapName;
 
-    public List<Location> loadNpcLocations(String path) {
-    
-        List<Location> locations = new ArrayList<>();
-    
-        for (String s : arena.getConfig().getYml().getStringList(path)) {
-    
-            String[] split = s.split(",");
-    
-            if (split.length < 5) continue;
-    
-            locations.add(new Location(
-                    arena.getWorld(),
-                    Double.parseDouble(split[0]),
-                    Double.parseDouble(split[1]),
-                    Double.parseDouble(split[2]),
-                    Float.parseFloat(split[3]),
-                    Float.parseFloat(split[4])
-            ));
-        }
-    
-        return locations;
-    }
-
     /**
      * Load an arena.
      * This will check if it was set up right.
@@ -412,6 +389,29 @@ public class Arena implements IArena {
                     oreGenerators.add(new OreGenerator(location, this, GeneratorType.valueOf(type.toUpperCase()), null, true));
                 }
             }
+        }
+
+        private List<Location> loadNpcLocations(String path) {
+        
+            List<Location> locations = new ArrayList<>();
+        
+            for (String s : this.getConfig().getYml().getStringList(path)) {
+        
+                String[] split = s.split(",");
+        
+                if (split.length < 5) continue;
+        
+                locations.add(new Location(
+                        this.getWorld(),
+                        Double.parseDouble(split[0]),
+                        Double.parseDouble(split[1]),
+                        Double.parseDouble(split[2]),
+                        Float.parseFloat(split[3]),
+                        Float.parseFloat(split[4])
+                ));
+            }
+        
+            return locations;
         }
 
         private List<Location> publicShops = loadNpcLocations("npcs.Shop");
