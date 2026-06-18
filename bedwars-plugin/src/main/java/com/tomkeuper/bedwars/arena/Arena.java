@@ -391,6 +391,9 @@ public class Arena implements IArena {
             }
         }
 
+        publicShops = BedWarsTeam.loadNpcLocations("npcs.Shop");
+        publicUpgrades = BedWarsTeam.loadNpcLocations("npcs.Upgrade");
+
         String shopName = "shop";
         String upgradeName = "upgrade";
         
@@ -413,40 +416,35 @@ public class Arena implements IArena {
                     }
 
                 }, 20L);
-
-                for (String s : yml.getStringList("npcs." + t)) {
-                    location = cm.convertStringToArenaLocation(s);
-                    if (location == null) {
-                        continue;
-                    }
-
-                    if ("Upgrade".equals(t)) {
-                        Cuboid c1 = new Cuboid(
-                                location,
-                                this.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION),
-                                true
-                        );
-                
-                        c1.setMinY(c1.getMinY() - 1);
-                        c1.setMaxY(c1.getMaxY() + 4);
-                
-                        this.getRegionsList().add(c1);
-                    }
-
-                    else if ("Shop".equals(t)) {
-                        Cuboid c2 = new Cuboid(
-                                location,
-                                this.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION),
-                                true
-                        );
-                
-                        c2.setMinY(c2.getMinY() - 1);
-                        c2.setMaxY(c2.getMaxY() + 4);
-                
-                        this.getRegionsList().add(c2);
-                    }
-                }
             }
+        }
+        for (Location loc : publicShops) {
+            if (loc == null) continue;
+    
+            Cuboid c2 = new Cuboid(
+                    loc,
+                    arena.getConfig().getInt(ConfigPath.ARENA_SHOP_PROTECTION),
+                    true
+            );
+    
+            c2.setMinY(c2.getMinY() - 1);
+            c2.setMaxY(c2.getMaxY() + 4);
+    
+            arena.getRegionsList().add(c2);
+        }
+        for (Location loc : publicUpgrades) {
+            if (loc == null) continue;
+    
+            Cuboid c1 = new Cuboid(
+                    loc,
+                    arena.getConfig().getInt(ConfigPath.ARENA_UPGRADES_PROTECTION),
+                    true
+            );
+    
+            c1.setMinY(c1.getMinY() - 1);
+            c1.setMaxY(c1.getMaxY() + 4);
+    
+            arena.getRegionsList().add(c1);
         }
 
         arenas.add(this);
