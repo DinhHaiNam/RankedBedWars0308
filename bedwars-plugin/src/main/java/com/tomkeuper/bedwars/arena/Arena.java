@@ -522,6 +522,11 @@ public class Arena implements IArena {
         publicNPCsSpawned = true;
     }
 
+    @Override
+    public boolean isPublicShopSpawned() {
+        return publicNPCsSpawned
+    }
+
     /**
      * Add a player to the arena
      *
@@ -1450,6 +1455,16 @@ public class Arena implements IArena {
             ));
         }
         return locations;
+    }
+
+    @Override
+    public List<Location> getPublicShops() {
+        return this.publicShops;
+    }
+
+    @Override
+    public List<Location> getPublicUpgrades() {
+        return this.publicUpgrades;
     }
 
     @Override
