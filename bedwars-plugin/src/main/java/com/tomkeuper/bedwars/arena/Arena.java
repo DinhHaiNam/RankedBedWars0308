@@ -399,7 +399,7 @@ public class Arena implements IArena {
             if (yml.get("npcs." + t) != null) {
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     for (String s : yml.getStringList("npcs." + t)) {
-                        Location location = cm.convertStringToArenaLocation(s);
+                        location = cm.convertStringToArenaLocation(s);
                         if (location == null) continue;
 
                         if ("Shop".equals(t)) {
