@@ -16,20 +16,20 @@ public class ShopOpenListener implements Listener {
     @EventHandler
     public void onShopOpen(PlayerInteractEntityEvent e) {
         Player player = e.getPlayer();
-        IArena a = Arena.getArenaByPlayer(player);[cite: 2]
+        IArena a = Arena.getArenaByPlayer(player); 
 
-        if (a == null) return;[cite: 2]
-        if (!a.getStatus().equals(GameState.playing)) return;[cite: 2]
-        if (!a.isPlayer(player)) return;[cite: 2]
+        if (a == null) return; 
+        if (!a.getStatus().equals(GameState.playing)) return; 
+        if (!a.isPlayer(player)) return; 
 
-        Location clickLoc = e.getRightClicked().getLocation();[cite: 2]
+        Location clickLoc = e.getRightClicked().getLocation(); 
 
         // 1. Check Team Shops
-        for (ITeam t : a.getTeams()) {[cite: 2]
-            for (Location shopLoc : t.getShops()) {[cite: 2]
-                if (isSameBlock(clickLoc, shopLoc)) {[cite: 2]
-                    e.setCancelled(true);[cite: 2]
-                    openShop(a, player);[cite: 2]
+        for (ITeam t : a.getTeams()) { 
+            for (Location shopLoc : t.getShops()) { 
+                if (isSameBlock(clickLoc, shopLoc)) { 
+                    e.setCancelled(true); 
+                    openShop(a, player); 
                     return;
                 }
             }
@@ -59,15 +59,15 @@ public class ShopOpenListener implements Listener {
     private boolean isSameBlock(Location loc1, Location loc2) {
         return loc1.getBlockX() == loc2.getBlockX()
                 && loc1.getBlockY() == loc2.getBlockY()
-                && loc1.getBlockZ() == loc2.getBlockZ();[cite: 2]
+                && loc1.getBlockZ() == loc2.getBlockZ(); 
     }
 
     private void openShop(IArena a, Player player) {
-        if (a.getLinkedShop() != null) {[cite: 2]
+        if (a.getLinkedShop() != null) { 
             a.getLinkedShop().open(
                     player,
-                    PlayerQuickBuyCache.getInstance().getQuickBuyCache(player.getUniqueId()),[cite: 2]
-                    true[cite: 2]
+                    PlayerQuickBuyCache.getInstance().getQuickBuyCache(player.getUniqueId()), 
+                    true 
             );
         }
     }
